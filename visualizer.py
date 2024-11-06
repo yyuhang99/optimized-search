@@ -1,4 +1,5 @@
 import pygame
+from pathfinding import Pathfinding
 
 # Initialize Pygame
 pygame.init()
@@ -14,6 +15,7 @@ BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
 
 # Set up the screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -44,6 +46,8 @@ def draw_grid():
                 color = GREEN
             elif grid[row][col] == 2:  # Goal
                 color = RED
+            elif grid[row][col] == 3: #Path
+                color = YELLOW
             pygame.draw.rect(screen, color, (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
             pygame.draw.rect(screen, BLUE, (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE), 1)  # Grid lines
 
@@ -53,13 +57,24 @@ draw_grid()
 pygame.display.flip()
 
 running = True
+path_found = False
+pathfinder = Pathfinding(grid, start, goal)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Check if the close button is clicked
             running = False  # Exit the loop, ending the program
-
+    if not path_found:
+        path = pathfinder.d_star() #TO BE REPLACED WITH ALGORITHM DETERMINER
+        print(path)
+        if path:
+            for position in path:
+                grid[position[0]][position[1]] = 3
+                draw_grid()
+                pygame.display.flip()
+                pygame.time.delay(50)
+            path_found = True
     # Redraw the screen each frame
-    screen.fill(WHITE)
+    #screen.fill(WHITE)
     draw_grid()  # Draw the initial grid or update with each algorithm step if needed
     
     # Example placeholder: Run your pathfinding algorithm here and visualize the steps
