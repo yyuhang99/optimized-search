@@ -29,6 +29,30 @@ class Pathfinding:
                     heapq.heappush(priority_queue, (priority, neighbor))
         print("done")
         return None  # No path found
+    
+    def a_star(self):
+        self.distances = {self.start: 0}  # Start from the start node
+        priority_queue = []
+        heapq.heappush(priority_queue, (0, self.start))
+        visited = set()
+        came_from = {}
+
+        while priority_queue:
+            current_cost, current = heapq.heappop(priority_queue)
+            if current == self.goal:
+                return self.reconstruct_path2(came_from)  # Use came_from to reconstruct path
+            visited.add(current)
+            for neighbor in self.get_neighbors(current):
+                if neighbor in visited:
+                    continue
+                new_cost = current_cost + 1  # Customize this for variable costs
+                if neighbor not in self.distances or new_cost < self.distances[neighbor]:
+                    self.distances[neighbor] = new_cost
+                    priority = new_cost + self.manhattan_distance(self.goal, neighbor)
+                    heapq.heappush(priority_queue, (priority, neighbor))
+                    came_from[neighbor] = current  # Track path
+
+        return None  # No path found
 
     def reconstruct_path(self):
         path = []
@@ -37,6 +61,16 @@ class Pathfinding:
             path.append(current)
             current = min((neighbor for neighbor in self.get_neighbors(current)),key=lambda x: self.distances.get(x, float("inf")),default=self.goal)
         path.append(self.goal)
+        return path
+    
+    def reconstruct_path2(self, came_from):
+        path = []
+        current = self.goal
+        while current != self.start:
+            path.append(current)
+            current = came_from.get(current)
+        path.append(self.start)
+        path.reverse()  # Reverse path to start from the beginning
         return path
 
     def manhattan_distance(self, a, b):

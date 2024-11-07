@@ -64,7 +64,7 @@ while running:
         if event.type == pygame.QUIT:  # Check if the close button is clicked
             running = False  # Exit the loop, ending the program
     if not path_found:
-        path = pathfinder.d_star() #TO BE REPLACED WITH ALGORITHM DETERMINER
+        path = pathfinder.a_star() #TO BE REPLACED WITH ALGORITHM DETERMINER
         print(path)
         if path:
             for position in path:
