@@ -1,4 +1,5 @@
 import heapq
+from collections import deque
 
 class Pathfinding:
     def __init__(self, grid, start, goal):
@@ -53,6 +54,22 @@ class Pathfinding:
                     came_from[neighbor] = current  # Track path
 
         return None  # No path found
+    
+    def bfs(self):
+        queue = deque([self.start])
+        came_from = {self.start: None}
+        visited = set()
+
+        while queue:
+            current = queue.popleft()
+            if current == self.goal:
+                return self.reconstruct_path2(came_from)
+            visited.add(current)
+            for neighbor in self.get_neighbors(current):
+                if neighbor not in visited and neighbor not in came_from:
+                    came_from[neighbor] = current
+                    queue.append(neighbor)
+        return None
 
     def reconstruct_path(self):
         path = []
