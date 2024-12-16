@@ -3,6 +3,7 @@ import random
 import time  # For measuring runtime
 from pathfinding import Pathfinding  # A* Implementation
 from jumpstart import JumpStart
+import matplotlib.pyplot as plt
 
 # Initialize Pygame
 pygame.init()
@@ -36,14 +37,22 @@ grid_combined = [[0 for _ in range(COLS)] for _ in range(ROWS)]
 start = (0, 0)
 goal = (ROWS - 1, COLS - 1)
 
-# Populate grids with obstacles
-for grid in [grid_a_star, grid_jps, grid_d_star, grid_combined]:
-    for _ in range(150):
-        x, y = random.randint(0, ROWS - 1), random.randint(0, COLS - 1)
-        if (x, y) != start and (x, y) != goal:
-            grid[x][y] = -1
-    grid[start[0]][start[1]] = 1  # Start point
-    grid[goal[0]][goal[1]] = 2    # Goal point
+# Create a single base grid with obstacles
+base_grid = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+
+# Populate the base grid with obstacles
+for _ in range(150):
+    x, y = random.randint(0, ROWS - 1), random.randint(0, COLS - 1)
+    if (x, y) != start and (x, y) != goal:
+        base_grid[x][y] = -1
+base_grid[start[0]][start[1]] = 1  # Start point
+base_grid[goal[0]][goal[1]] = 2    # Goal point
+
+# Copy the base grid to all grids
+grid_a_star = [row[:] for row in base_grid]
+grid_jps = [row[:] for row in base_grid]
+grid_d_star = [row[:] for row in base_grid]
+grid_combined = [row[:] for row in base_grid]
 
 
 def draw_grid(grid, offset_x, offset_y):
@@ -100,10 +109,15 @@ a_star_runtime = 0
 jps_runtime = 0
 d_star_runtime = 0
 
+iteration = 5
+current_iteration = 1
 running = True
+a_star_runtimes = []
+d_star_runtimes = []
+jps_runtimes = []
 
 # Main loop
-while running:
+while running and current_iteration <= iteration:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -163,5 +177,65 @@ while running:
     draw_runtime(d_star_runtime, 0, HEIGHT // 2, "D*")
 
     pygame.display.flip()
+    a_star_runtimes.append(a_star_runtime)
+    jps_runtimes.append(jps_runtime)
+    d_star_runtimes.append(d_star_runtime)
+    print(len(a_star_runtimes))
+    if a_star_complete and d_star_complete or jps_complete:
+        pygame.time.delay(1000)
+        if current_iteration < iteration:
+            # Create a single base grid with obstacles
+            base_grid = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+
+            # Populate the base grid with obstacles
+            for _ in range(150):
+                x, y = random.randint(0, ROWS - 1), random.randint(0, COLS - 1)
+                if (x, y) != start and (x, y) != goal:
+                    base_grid[x][y] = -1
+            base_grid[start[0]][start[1]] = 1  # Start point
+            base_grid[goal[0]][goal[1]] = 2    # Goal point
+
+            # Copy the base grid to all grids
+            grid_a_star = [row[:] for row in base_grid]
+            grid_jps = [row[:] for row in base_grid]
+            grid_d_star = [row[:] for row in base_grid]
+            grid_combined = [row[:] for row in base_grid]
+            # Initialize pathfinding objects
+            a_star = Pathfinding(grid_a_star, start, goal)
+            jps = JumpStart(grid_jps, start, goal)
+            d_star = Pathfinding(grid_d_star, start, goal)
+
+            # Flags for completion
+            a_star_complete = False
+            jps_complete = False
+            d_star_complete = False
+
+            # Runtime tracking
+            a_star_runtime = 0
+            jps_runtime = 0
+            d_star_runtime = 0
+            current_iteration +=1
+    else:
+        running = False
+        
+
 
 pygame.quit()
+# Plot the runtimes using Matplotlib
+iterations = list(range(1, len(a_star_runtimes) + 1))
+
+# Plot the runtimes using Matplotlib
+plt.figure(figsize=(10, 6))
+
+plt.plot(iterations, a_star_runtimes, label='A* Runtime', marker='o')
+plt.plot(iterations, jps_runtimes, label='JPS Runtime', marker='o')
+plt.plot(iterations, d_star_runtimes, label='D* Runtime', marker='o')
+
+plt.xlabel('Iteration')
+plt.ylabel('Runtime (ms)')
+plt.title('Runtime Comparison of Pathfinding Algorithms')
+plt.legend()
+plt.grid(True)
+
+# Display the graph
+plt.show()
