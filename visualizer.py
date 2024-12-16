@@ -22,7 +22,7 @@ BLUE = (0, 0, 255)      # Grid lines
 
 # Set up the screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("A* and Jump Point Search Visualization")
+pygame.display.set_caption("A* and Jump Point Search and D_star Visualization")
 
 # Initialize grid
 grid = [[0 for _ in range(COLS)] for _ in range(ROWS)]
@@ -53,8 +53,11 @@ def draw_grid():
                 color = YELLOW
             elif grid[row][col] == 4:  # JPS Path
                 color = ORANGE
+            elif grid[row][col] == 5:  # D_star path
+                color = BLUE
             pygame.draw.rect(screen, color, (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
             pygame.draw.rect(screen, BLUE, (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE), 1)  # Grid lines
+
 
 # Initial draw
 screen.fill(WHITE)
@@ -64,16 +67,27 @@ pygame.display.flip()
 running = True
 a_star_path_found = False
 jps_path_found = False
+d_star_path_found = False
 
 # Initialize A* and Jump Point Search
 a_star = Pathfinding(grid, start, goal)
 jps = JumpStart(grid, start, goal)
+d_star = Pathfinding(grid, start, goal)
 
 # Main loop
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    if not d_star_path_found:
+        d_star_path = d_star.d_star()
+        if d_star_path:
+            for position in d_star_path:
+                grid[position[0]][position[1]] = 5  # Mark A* Path
+                draw_grid()
+                pygame.display.flip()
+                pygame.time.delay(50)
+            d_star_path_found = True
 
     if not a_star_path_found:
         # Run A* Algorithm
