@@ -18,6 +18,7 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
+ORANGE = (255, 165, 0)
 
 # Create the Pygame screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -60,6 +61,8 @@ def draw_grid(grid, offset_x):
             elif grid[row][col] == 2:  # Goal
                 color = RED
             elif grid[row][col] == 3:  # Path
+                color = ORANGE
+            elif grid[row][col] == 4:
                 color = YELLOW
             pygame.draw.rect(
                 screen,
@@ -88,13 +91,13 @@ def draw_labels():
     screen.blit(label_d_star, (3 * WIDTH // 4 - label_d_star.get_width() // 2, 10))
 
 
-def run_pathfinding(pathfinder, grid, path_found_flag, delay):
+def run_pathfinding(pathfinder, grid, path_found_flag, delay, color):
     """Thread function to run the pathfinding algorithm."""
     path = pathfinder.a_star()  # Use the appropriate algorithm here
     if path:
         for position in path:
             with lock:  # Ensure grid update is thread-safe
-                grid[position[0]][position[1]] = 3
+                grid[position[0]][position[1]] = color
             pygame.time.delay(delay)
         path_found_flag[0] = True  # Mark the path as completed
 
@@ -108,8 +111,8 @@ path_found_a_star = [False]
 path_found_d_star = [False]
 
 # Create threads for simultaneous execution
-thread_a_star = threading.Thread(target=run_pathfinding, args=(pathfinder_a_star, grid_a_star, path_found_a_star, 50))
-thread_d_star = threading.Thread(target=run_pathfinding, args=(pathfinder_d_star, grid_d_star, path_found_d_star, 50))
+thread_a_star = threading.Thread(target=run_pathfinding, args=(pathfinder_a_star, grid_a_star, path_found_a_star, 50, 3))
+thread_d_star = threading.Thread(target=run_pathfinding, args=(pathfinder_d_star, grid_d_star, path_found_d_star, 50, 4))
 
 # Start threads
 thread_a_star.start()
