@@ -15,7 +15,7 @@ class Pathfinding:
         visited = set()
 
         while priority_queue:
-            print("running")
+           # print("running")
             current_cost, current = heapq.heappop(priority_queue)
             if current == self.start:
                 return self.reconstruct_path()
@@ -28,7 +28,7 @@ class Pathfinding:
                     self.distances[neighbor] = new_cost
                     priority = new_cost + self.manhattan_distance(self.start, neighbor)
                     heapq.heappush(priority_queue, (priority, neighbor))
-        print("done")
+       # print("done")
         return None  # No path found
     
     def a_star(self):
