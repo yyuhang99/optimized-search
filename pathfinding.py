@@ -76,7 +76,7 @@ class Pathfinding:
         return None
     
     def greedy_best_first_search(self):
-        priority_queue = [(self.heuristic(self.start, self.goal), self.start)]
+        priority_queue = [(self.manhattan_distance(self.start, self.goal), self.start)]
         came_from = {self.start: None}
         visited = set()
 
@@ -91,7 +91,7 @@ class Pathfinding:
             for neighbor in self.get_neighbors(current):
                 if neighbor not in visited and neighbor not in came_from:
                     came_from[neighbor] = current
-                    heapq.heappush(priority_queue, (self.heuristic(neighbor, self.goal), neighbor))
+                    heapq.heappush(priority_queue, (self.manhattan_distance(neighbor, self.goal), neighbor))
                 
         return None
 
