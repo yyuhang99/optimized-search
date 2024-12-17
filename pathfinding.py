@@ -79,21 +79,23 @@ class Pathfinding:
         priority_queue = [(self.manhattan_distance(self.start, self.goal), self.start)]
         came_from = {self.start: None}
         visited = set()
+        node_expanded = 0  # Track the number of expanded nodes
 
         while priority_queue:
             _, current = heapq.heappop(priority_queue)
+            node_expanded += 1  # Increment expanded node count
 
             if current == self.goal:
-                return self.reconstruct_path2(came_from)
+                return self.reconstruct_path2(came_from), node_expanded
 
             visited.add(current)
-            
+
             for neighbor in self.get_neighbors(current):
                 if neighbor not in visited and neighbor not in came_from:
                     came_from[neighbor] = current
                     heapq.heappush(priority_queue, (self.manhattan_distance(neighbor, self.goal), neighbor))
-                
-        return None
+
+        return None, node_expanded  # No path found
 
     def reconstruct_path(self):
         path = []

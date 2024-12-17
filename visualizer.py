@@ -22,6 +22,7 @@ YELLOW = (255, 255, 0)  # A* Path Color
 ORANGE = (255, 165, 0)  # JPS Path Color
 BLUE = (0, 0, 255)      # D* Path Color
 GRAY = (128, 128, 128)  # Grid lines
+PURPLE = (128, 0, 128)
 
 # Set up the screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -31,7 +32,7 @@ pygame.display.set_caption("Pathfinding Visualization with Runtime Stats")
 grid_a_star = [[0 for _ in range(COLS)] for _ in range(ROWS)]
 grid_jps = [[0 for _ in range(COLS)] for _ in range(ROWS)]
 grid_d_star = [[0 for _ in range(COLS)] for _ in range(ROWS)]
-grid_combined = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+grid_greedy = [[0 for _ in range(COLS)] for _ in range(ROWS)]
 
 # Define start and goal positions
 start = (0, 0)
@@ -52,8 +53,7 @@ base_grid[goal[0]][goal[1]] = 2    # Goal point
 grid_a_star = [row[:] for row in base_grid]
 grid_jps = [row[:] for row in base_grid]
 grid_d_star = [row[:] for row in base_grid]
-grid_combined = [row[:] for row in base_grid]
-
+grid_greedy = [row[:] for row in base_grid]
 
 def draw_grid(grid, offset_x, offset_y):
     """Draw the grid in its designated area."""
@@ -72,6 +72,8 @@ def draw_grid(grid, offset_x, offset_y):
                 color = ORANGE
             elif grid[row][col] == 5:  # D* Path
                 color = BLUE
+            elif grid[row][col] == 6:  # Greedy Path
+                color = PURPLE
 
             pygame.draw.rect(
                 screen,
@@ -98,16 +100,19 @@ def draw_runtime(runtime, offset_x, offset_y, label):
 a_star = Pathfinding(grid_a_star, start, goal)
 jps = JumpStart(grid_jps, start, goal)
 d_star = Pathfinding(grid_d_star, start, goal)
+greedy = Pathfinding(grid_greedy, start, goal)
 
 # Flags for completion
 a_star_complete = False
 jps_complete = False
 d_star_complete = False
+greedy_complete = False
 
 # Runtime tracking
 a_star_runtime = 0
 jps_runtime = 0
 d_star_runtime = 0
+greedy_runtime = 0
 
 iteration = 3
 current_iteration = 1
@@ -115,9 +120,11 @@ running = True
 a_star_runtimes = []
 d_star_runtimes = []
 jps_runtimes = []
+greedy_runtimes = []
 a_star_nodes_expanded = []
 jps_nodes_expanded = []
 d_star_nodes_expanded = []
+greedy_nodes_expanded = []
 
 # Main loop
 while running and current_iteration <= iteration:
@@ -182,6 +189,24 @@ while running and current_iteration <= iteration:
         else:
             d_star_nodes_expanded.append(d_star_expand)
             d_star_runtimes.append(0)
+    
+    if not greedy_complete:
+        start_time = time.time()
+        greedy_path, greedy_expand = greedy.greedy_best_first_search()
+        end_time = time.time()
+        greedy_runtime = (end_time - start_time) * 1000  # Convert to milliseconds
+        if greedy_path:
+            for position in greedy_path:
+                grid_greedy[position[0]][position[1]] = 6  # Mark Greedy Path
+                draw_grid(grid_greedy, WIDTH // 2, HEIGHT // 2)
+                pygame.display.flip()
+                pygame.time.delay(50)
+            greedy_complete = True
+            greedy_nodes_expanded.append(greedy_nodes_expanded)
+            greedy_runtimes.append(greedy_runtime)
+        else:
+            greedy_nodes_expanded.append(greedy_nodes_expanded)
+            greedy_runtimes.append(0)
 
 
     # Update display
@@ -189,12 +214,13 @@ while running and current_iteration <= iteration:
     draw_grid(grid_a_star, 0, 0)          # Top-left quadrant
     draw_grid(grid_jps, WIDTH // 2, 0)   # Top-right quadrant
     draw_grid(grid_d_star, 0, HEIGHT // 2)  # Bottom-left quadrant
-    draw_grid(grid_combined, WIDTH // 2, HEIGHT // 2)  # Bottom-right quadrant
+    draw_grid(grid_greedy, WIDTH // 2, HEIGHT // 2)  # Bottom-right quadrant
 
     # Draw runtime statistics
     draw_runtime(a_star_runtime, 0, 0, "A*")
     draw_runtime(jps_runtime, WIDTH // 2, 0, "JPS")
     draw_runtime(d_star_runtime, 0, HEIGHT // 2, "D*")
+    draw_runtime(greedy_runtime, WIDTH // 2, HEIGHT // 2, "Greedy")
 
     pygame.display.flip()
     #a_star_runtimes.append(a_star_runtime)
@@ -204,7 +230,7 @@ while running and current_iteration <= iteration:
     #a_star_nodes_expanded.append(a_star_expand)
     #jps_nodes_expanded.append(jps_expand)
     
-    if a_star_complete and d_star_complete or jps_complete:
+    if a_star_complete or d_star_complete or jps_complete or greedy_complete:
         pygame.time.delay(1000)
         if current_iteration < iteration:
             # Create a single base grid with obstacles
@@ -222,21 +248,24 @@ while running and current_iteration <= iteration:
             grid_a_star = [row[:] for row in base_grid]
             grid_jps = [row[:] for row in base_grid]
             grid_d_star = [row[:] for row in base_grid]
-            grid_combined = [row[:] for row in base_grid]
+            grid_greedy = [row[:] for row in base_grid]
             # Initialize pathfinding objects
             a_star = Pathfinding(grid_a_star, start, goal)
             jps = JumpStart(grid_jps, start, goal)
             d_star = Pathfinding(grid_d_star, start, goal)
+            greedy = Pathfinding(grid_greedy, start, goal)
 
             # Flags for completion
             a_star_complete = False
             jps_complete = False
             d_star_complete = False
+            greedy_complete = False
 
             # Runtime tracking
             a_star_runtime = 0
             jps_runtime = 0
             d_star_runtime = 0
+            greedy_runtime = 0
             current_iteration +=1
         else:
             pygame.quit()
@@ -261,6 +290,7 @@ plt.figure(figsize=(10, 6))
 plt.plot(iterations, a_star_runtimes, label='A* Runtime', marker='o')
 plt.plot(iterations, jps_runtimes, label='JPS Runtime', marker='o')
 plt.plot(iterations, d_star_runtimes, label='D* Runtime', marker='o')
+plt.plot(iterations, greedy_runtimes, label='Greedy Runtime', marker='o')
 
 plt.xlabel('Iteration')
 plt.ylabel('Runtime (ms)')
@@ -275,6 +305,7 @@ plt.figure(figsize=(10, 6))
 plt.plot(iterations, a_star_nodes_expanded, label="A* Nodes Expanded", marker='o')
 plt.plot(iterations, jps_nodes_expanded, label="JPS Nodes Expanded", marker='o')
 plt.plot(iterations, d_star_nodes_expanded, label="D* Nodes Expanded", marker='o')
+plt.plot(iterations, greedy_nodes_expanded, label="Greedy Nodes Expanded", marker='o')
 plt.xlabel('Iteration')
 plt.ylabel('Nodes Expanded')
 plt.title('Nodes Expanded Comparison of Pathfinding Algorithms')
