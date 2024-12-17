@@ -114,7 +114,7 @@ jps_runtime = 0
 d_star_runtime = 0
 greedy_runtime = 0
 
-iteration = 3
+iteration = 2
 current_iteration = 1
 running = True
 a_star_runtimes = []
@@ -202,10 +202,10 @@ while running and current_iteration <= iteration:
                 pygame.display.flip()
                 pygame.time.delay(50)
             greedy_complete = True
-            greedy_nodes_expanded.append(greedy_nodes_expanded)
+            greedy_nodes_expanded.append(greedy_expand)
             greedy_runtimes.append(greedy_runtime)
         else:
-            greedy_nodes_expanded.append(greedy_nodes_expanded)
+            greedy_nodes_expanded.append(greedy_expand)
             greedy_runtimes.append(0)
 
 
@@ -283,7 +283,7 @@ print("Length of jps_runtimes:", len(jps_runtimes))
 print("Length of d_star_runtimes:", len(d_star_runtimes))"""
 # Plot the runtimes using Matplotlib
 iterations = list(range(1, len(a_star_runtimes) + 1))
-
+#print("Length of g_star_runtimes:", greedy_nodes_expanded)
 # Plot the runtimes using Matplotlib
 plt.figure(figsize=(10, 6))
 
