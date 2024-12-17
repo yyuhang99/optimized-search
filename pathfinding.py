@@ -74,6 +74,26 @@ class Pathfinding:
                     came_from[neighbor] = current
                     queue.append(neighbor)
         return None
+    
+    def greedy_best_first_search(self):
+        priority_queue = [(self.heuristic(self.start, self.goal), self.start)]
+        came_from = {self.start: None}
+        visited = set()
+
+        while priority_queue:
+            _, current = heapq.heappop(priority_queue)
+
+            if current == self.goal:
+                return self.reconstruct_path2(came_from)
+
+            visited.add(current)
+            
+            for neighbor in self.get_neighbors(current):
+                if neighbor not in visited and neighbor not in came_from:
+                    came_from[neighbor] = current
+                    heapq.heappush(priority_queue, (self.heuristic(neighbor, self.goal), neighbor))
+                
+        return None
 
     def reconstruct_path(self):
         path = []
