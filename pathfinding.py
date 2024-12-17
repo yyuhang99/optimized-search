@@ -13,12 +13,14 @@ class Pathfinding:
         priority_queue = []
         heapq.heappush(priority_queue, (0, self.goal))
         visited = set()
+        node_expanded = 0
 
         while priority_queue:
            # print("running")
+            node_expanded +=1
             current_cost, current = heapq.heappop(priority_queue)
             if current == self.start:
-                return self.reconstruct_path()
+                return self.reconstruct_path(), node_expanded
             visited.add(current)
             for neighbor in self.get_neighbors(current):
                 if neighbor in visited:
@@ -29,7 +31,7 @@ class Pathfinding:
                     priority = new_cost + self.manhattan_distance(self.start, neighbor)
                     heapq.heappush(priority_queue, (priority, neighbor))
        # print("done")
-        return None  # No path found
+        return None, node_expanded  # No path found
     
     def a_star(self):
         self.distances = {self.start: 0}  # Start from the start node
@@ -37,11 +39,13 @@ class Pathfinding:
         heapq.heappush(priority_queue, (0, self.start))
         visited = set()
         came_from = {}
+        node_expanded = 0
 
         while priority_queue:
             current_cost, current = heapq.heappop(priority_queue)
+            node_expanded += 1
             if current == self.goal:
-                return self.reconstruct_path2(came_from)  # Use came_from to reconstruct path
+                return self.reconstruct_path2(came_from), node_expanded  # Use came_from to reconstruct path
             visited.add(current)
             for neighbor in self.get_neighbors(current):
                 if neighbor in visited:
@@ -53,7 +57,7 @@ class Pathfinding:
                     heapq.heappush(priority_queue, (priority, neighbor))
                     came_from[neighbor] = current  # Track path
 
-        return None  # No path found
+        return None, node_expanded  # No path found
     
     def bfs(self):
         queue = deque([self.start])

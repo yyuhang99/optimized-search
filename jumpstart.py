@@ -9,6 +9,7 @@ class JumpStart:
         self.cols = len(grid[0])
         self.distances = {}
         self.came_from = {}
+        self.node_expanded = 0
     
     def jump_point_search(self):
         self.distances = {self.start: 0}
@@ -18,8 +19,9 @@ class JumpStart:
 
         while priority_queue:
             current_cost, current = heapq.heappop(priority_queue)
+            self.node_expanded += 1
             if current == self.goal:
-                return self.reconstruct_path()
+                return self.reconstruct_path(), self.node_expanded
             
             visited.add(current)
             for neighbor in self.get_neighbors(current):
@@ -37,7 +39,7 @@ class JumpStart:
                     heapq.heappush(priority_queue, (priority, jump_point))
                     self.came_from[jump_point] = current
 
-        return None  # No path found
+        return None, self.node_expanded  # No path found
 
     def jump(self, current, direction):
         """Recursive jump method to determine valid jump points."""

@@ -109,12 +109,15 @@ a_star_runtime = 0
 jps_runtime = 0
 d_star_runtime = 0
 
-iteration = 5
+iteration = 3
 current_iteration = 1
 running = True
 a_star_runtimes = []
 d_star_runtimes = []
 jps_runtimes = []
+a_star_nodes_expanded = []
+jps_nodes_expanded = []
+d_star_nodes_expanded = []
 
 # Main loop
 while running and current_iteration <= iteration:
@@ -125,7 +128,7 @@ while running and current_iteration <= iteration:
     # Run A* algorithm
     if not a_star_complete:
         start_time = time.time()
-        a_star_path = a_star.a_star()
+        a_star_path, a_star_expand = a_star.a_star()
         end_time = time.time()
         a_star_runtime = (end_time - start_time) * 1000  # Convert to milliseconds
         if a_star_path:
@@ -135,11 +138,17 @@ while running and current_iteration <= iteration:
                 pygame.display.flip()
                 pygame.time.delay(50)
             a_star_complete = True
+            a_star_nodes_expanded.append(a_star_expand)
+            a_star_runtimes.append(a_star_runtime)
+        else:
+            a_star_nodes_expanded.append(a_star_expand)
+            a_star_runtimes.append(0)
+
 
     # Run Jump Point Search
     if not jps_complete:
         start_time = time.time()
-        jps_path = jps.jump_point_search()
+        jps_path, jps_expand = jps.jump_point_search()
         end_time = time.time()
         jps_runtime = (end_time - start_time) * 1000  # Convert to milliseconds
         if jps_path:
@@ -149,11 +158,16 @@ while running and current_iteration <= iteration:
                 pygame.display.flip()
                 pygame.time.delay(50)
             jps_complete = True
+            jps_runtimes.append(jps_runtime)
+            jps_nodes_expanded.append(jps_expand)
+        else:
+            jps_runtimes.append(0)
+            jps_nodes_expanded.append(jps_expand)
 
     # Run D* algorithm
     if not d_star_complete:
         start_time = time.time()
-        d_star_path = d_star.d_star()
+        d_star_path, d_star_expand = d_star.d_star()
         end_time = time.time()
         d_star_runtime = (end_time - start_time) * 1000  # Convert to milliseconds
         if d_star_path:
@@ -163,6 +177,12 @@ while running and current_iteration <= iteration:
                 pygame.display.flip()
                 pygame.time.delay(50)
             d_star_complete = True
+            d_star_nodes_expanded.append(d_star_expand)
+            d_star_runtimes.append(d_star_runtime)
+        else:
+            d_star_nodes_expanded.append(d_star_expand)
+            d_star_runtimes.append(0)
+
 
     # Update display
     screen.fill(WHITE)
@@ -177,10 +197,13 @@ while running and current_iteration <= iteration:
     draw_runtime(d_star_runtime, 0, HEIGHT // 2, "D*")
 
     pygame.display.flip()
-    a_star_runtimes.append(a_star_runtime)
-    jps_runtimes.append(jps_runtime)
-    d_star_runtimes.append(d_star_runtime)
-    print(len(a_star_runtimes))
+    #a_star_runtimes.append(a_star_runtime)
+    #jps_runtimes.append(jps_runtime)
+    #d_star_runtimes.append(d_star_runtime)
+    #print(len(a_star_runtimes))
+    #a_star_nodes_expanded.append(a_star_expand)
+    #jps_nodes_expanded.append(jps_expand)
+    
     if a_star_complete and d_star_complete or jps_complete:
         pygame.time.delay(1000)
         if current_iteration < iteration:
@@ -215,12 +238,20 @@ while running and current_iteration <= iteration:
             jps_runtime = 0
             d_star_runtime = 0
             current_iteration +=1
-    else:
-        running = False
+        else:
+            pygame.quit()
+            running = False
         
-
+"""print("Length of iterations:", iteration)
+print("Length of a_star_runtimes:", len(a_star_runtimes))
+print("Length of jps_runtimes:", len(jps_runtimes))
+print("Length of d_star_runtimes:", len(d_star_runtimes))"""
 
 pygame.quit()
+"""print("Length of iterations:", iteration)
+print("Length of a_star_runtimes:", len(a_star_runtimes))
+print("Length of jps_runtimes:", len(jps_runtimes))
+print("Length of d_star_runtimes:", len(d_star_runtimes))"""
 # Plot the runtimes using Matplotlib
 iterations = list(range(1, len(a_star_runtimes) + 1))
 
@@ -238,4 +269,15 @@ plt.legend()
 plt.grid(True)
 
 # Display the graph
+plt.show()
+
+plt.figure(figsize=(10, 6))
+plt.plot(iterations, a_star_nodes_expanded, label="A* Nodes Expanded", marker='o')
+plt.plot(iterations, jps_nodes_expanded, label="JPS Nodes Expanded", marker='o')
+plt.plot(iterations, d_star_nodes_expanded, label="D* Nodes Expanded", marker='o')
+plt.xlabel('Iteration')
+plt.ylabel('Nodes Expanded')
+plt.title('Nodes Expanded Comparison of Pathfinding Algorithms')
+plt.legend()
+plt.grid(True)
 plt.show()
